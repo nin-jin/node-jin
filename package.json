@@ -1,6 +1,6 @@
 {
   "name": "jin",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Harmoy node.js sugar full-async framework",
   "homepage": "https://github.com/nin-jin/node-jin",
   "author": {
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "sync": "*",
-    "npm": "*",
+    "npm": "*"
   },
   "engine": "node >= 0.4.1",
   "_id": "jin@1.0.0",
