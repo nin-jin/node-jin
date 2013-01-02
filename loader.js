@@ -2,19 +2,33 @@ module.exports=
 function( prefix ){
     if( !prefix ) prefix= ''
     
+    if( typeof Proxy === 'undefined' )
+        throw new Error( 'Harmony Proxy is disabled. Use --harmony to enable.' )
+    
     return Proxy.create
     (   new function( ){
             
             this.get=
             function( obj, name ){
                 var path= prefix + name
+                
                 try {
-                    require.resolve( path )
+                    path= require.resolve( path )
                 } catch( error ){
-                    $.child_process.spawn( 'npm install fiberize' )
-                    $.jin.sleep( 5000 )
+                    if( error.code !== 'MODULE_NOT_FOUND' ) throw error
+                    
+                    $= require( 'jin' ).loader()
+                    $.sync
+                    
+                    try {
+                        $.npm.load.sync( $.npm, {} )
+                        $.npm.commands.install.sync( $.npm.commands, [ path ] )
+                    } catch( error ){
+                        console.log( error )
+                        throw new Error( 'Can not autoinstall module [' + path + ']' )
+                    }
                 }
-                console.log( path )
+                
                 return require( path )
             }
             

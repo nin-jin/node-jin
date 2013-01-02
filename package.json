@@ -1,18 +1,29 @@
-{   "name": "jin"
-,   "version": "1.0.0"
-,   "description": "Harmoy node.js sugar full-async framework"
-,   "homepage": "https://github.com/nin-jin/node-jin"
-,   "author": "Nin Jin <nin-jin@ya.ru>"
-,   "keywords":
-    [   "javascript"
-    ,   "framework"
-    ,   "modules"
-    ]
-,   "bugs":
-    {   "email": "nin-jin@ya.ru"
-    }
-,   "dependencies":
-    {   "fibers": "*"
-    }
-,   "engine": "node >= 0.4.1"
+{
+  "name": "jin",
+  "version": "1.0.0",
+  "description": "Harmoy node.js sugar full-async framework",
+  "homepage": "https://github.com/nin-jin/node-jin",
+  "author": {
+    "name": "Nin Jin",
+    "email": "nin-jin@ya.ru"
+  },
+  "keywords": [
+    "javascript",
+    "framework",
+    "modules"
+  ],
+  "bugs": {
+    "email": "nin-jin@ya.ru"
+  },
+  "dependencies": {
+    "sync": "*",
+    "npm": "*",
+  },
+  "engine": "node >= 0.4.1",
+  "_id": "jin@1.0.0",
+  "readme": "ERROR: No README.md file found!",
+  "dist": {
+    "shasum": "aec67b4c0adb23f593b51082da2d4f8988dd9ab1"
+  },
+  "_from": "jin"
 }
