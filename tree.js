@@ -56,7 +56,8 @@ void function( tree ){
         prefix= prefix || ''
         var lines= []
         
-        this.data.forEach( function( sub ){
+        for( var i= 0; i < this.data.length; ++i ){
+            var sub= this.data[ i ]
             if( typeof sub === 'string' ){
                 lines.push( prefix + '=' + sub )
             } else {
@@ -70,7 +71,7 @@ void function( tree ){
                     }
                 }
             }
-        } )
+        }
         
         return new Tree( lines )
     }
@@ -81,15 +82,18 @@ void function( tree ){
         }
         
         var data= this.data
-        path.forEach( function( key ){
-            if( !key ) return
+        for( var i= 0; i < path.length; ++i ){
+            var key= path[ i ]
+            if( !key ) continue
+            
             var struct= []
-            data.forEach( function( sub ){
-                if(!( key in sub )) return
+            for( var j= 0; j < data.length; ++j ){
+                var sub= data[ j ]
+                if(!( key in sub )) continue
                 struct= struct.concat( sub[ key ] )
-            } )
+            }
             data= struct
-        } )
+        }
         
         return new Tree( data )
     }
@@ -97,10 +101,11 @@ void function( tree ){
     tree.values= function(){
         var values= []
         
-        this.data.forEach( function( sub ){
-            if( typeof sub !== 'string' ) return
+        for( var j= 0; j < this.data.length; ++j ){
+            var sub= this.data[ j ]
+            if( typeof sub !== 'string' ) continue
             values.push( sub )
-        } )
+        }
         
         return values
     }

@@ -20,7 +20,7 @@
     "npm": "*"
   },
   "engine": "node >= 0.4.1",
-  "_id": "jin@1.0.0",
+  "_id": "jin@1.1.0",
   "readme": "ERROR: No README.md file found!",
   "dist": {
     "shasum": "aec67b4c0adb23f593b51082da2d4f8988dd9ab1"

@@ -1,3 +1,6 @@
+var fiberizer= require( 'jin/fiberizer' )
+
+var loader=
 module.exports=
 function( prefix ){
     if( !prefix ) prefix= ''
@@ -5,7 +8,7 @@ function( prefix ){
     if( typeof Proxy === 'undefined' )
         throw new Error( 'Harmony Proxy is disabled. Use --harmony to enable.' )
     
-    return Proxy.create
+    return Proxy.createFunction
     (   new function( ){
             
             this.get=
@@ -17,21 +20,25 @@ function( prefix ){
                 } catch( error ){
                     if( error.code !== 'MODULE_NOT_FOUND' ) throw error
                     
-                    $= require( 'jin' ).loader()
-                    $.sync
+                    var $= require( 'jin' ).loader()
                     
                     try {
-                        $.npm.load.sync( $.npm, {} )
+                        $.npm.loadSync( {} ).valueOf()
+                        $.sync
                         $.npm.commands.install.sync( $.npm.commands, [ path ] )
                     } catch( error ){
-                        console.log( error )
+                        console.log( error.stack )
                         throw new Error( 'Can not autoinstall module [' + path + ']' )
                     }
                 }
                 
-                return require( path )
+                return fiberizer( require( path ) )
             }
             
+        }
+    ,   function( func ){
+            var $= loader()
+            return $.fibers( func ).run( $ )
         }
     )
 }
