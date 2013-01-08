@@ -5,71 +5,80 @@ function tree( data ){
     return new Tree( data )
 }
 
-function Tree( data ){
-    this.data= data
+function Tree( values, name ){
+    this.name= name
+    this.content= values
 }
 
 void function( tree ){
     
+    tree.name= null
+    tree.content= null
+    
     tree.parse= function( ){
         var struct= []
-        for( var k= 0; k < this.data.length; ++k ){
-            var sub= this.data[ k ]
+        this.forEach( function( sub ){
             if( typeof sub !== 'string' ){
                 struct.push( sub )
-            } else {
-                var stack= [ struct ]
-                var lines= sub.split( '\n' )
-                for( var i= 0; i < lines.length; ++i ){
-                    var line= lines[ i ]
-                    var chunks= /^([ \t]*)([^=]*)(?:=(.*))?$/.exec( line )
-                    
-                    if( !chunks ) continue
-                    
-                    var indent= chunks[ 1 ]
-                    var key= chunks[ 2 ]
-                    var value= chunks[ 3 ]
-                    
-                    stack.splice( 0, stack.length - indent.length - 1 )
-                    
-                    var keys= key.split( /\s+/ )
-                    var s= stack[ 0 ]
-                    for( var j= 0; j < keys.length; ++j ){
-                        var key= keys[ j ]
-                        if( !key ) continue
-                        
-                        var val= {}
-                        val[ key ]= []
-                        s.push( val )
-                        s= val[ key ]
-                    }
-                    stack.unshift( s )
-                    
-                    if( value != null ) s.push( value )
-                }
+                return
             }
-        }
+            
+            var stack= [ struct ]
+            var lines= sub.split( '\n' )
+            
+            for( var i= 0; i < lines.length; ++i ){
+                var line= lines[ i ]
+                var chunks= /^([ \t]*)([^=]*)(?:=(.*))?$/.exec( line )
+                
+                if( !chunks ) continue
+                
+                var indent= chunks[ 1 ]
+                var key= chunks[ 2 ]
+                var value= chunks[ 3 ]
+                
+                stack.splice( 0, stack.length - indent.length - 1 )
+                
+                var keys= key.split( /\s+/ )
+                var s= stack[ 0 ]
+                
+                for( var j= 0; j < keys.length; ++j ){
+                    var key= keys[ j ]
+                    if( !key ) continue
+                    
+                    var t= new Tree( [], key )
+                    s.push( t )
+                    s= t.content
+                }
+                
+                stack.unshift( s )
+                
+                if( value != null ) s.push( value )
+            }
+            
+        } )
+        
         return new Tree( struct )
     }
     
-    tree.lines= function( prefix ){
-        prefix= prefix || ''
-        var lines= []
+    tree.lines= function( ){
         
-        for( var i= 0; i < this.data.length; ++i ){
-            var sub= this.data[ i ]
-            if( typeof sub === 'string' ){
-                lines.push( prefix + '=' + sub )
+        var lines= [ ]
+        this.forEach( function( value ){
+            if( value instanceof Tree ){
+                lines= lines.concat( value.lines().content )
             } else {
-                for( var key in sub ){
-                    if( !sub.hasOwnProperty( key ) ) continue
-                    if(( sub[ key ].length === 1 )&&( typeof sub[ key ][ 0 ] === 'string' )){
-                        lines.push( prefix + key + ' =' + sub[ key ][ 0 ] )
-                    } else {
-                        lines.push( prefix + key )
-                        lines= lines.concat( ( new Tree( sub[ key ] ) ).lines( prefix + '\t' ).values() )
-                    }
-                }
+                lines.push( '=' + value )
+            }
+        } )
+        
+        if( this.name ){
+            if( this.content.length > 1 ){
+                lines= lines.map( function( line ){
+                    return '\t' + line
+                })
+                lines.unshift( this.name )
+            } else {
+                lines[ 0 ]= this.name + ' ' + lines[ 0 ]
             }
         }
         
@@ -77,41 +86,89 @@ void function( tree ){
     }
     
     tree.select= function( path ){
-        if( typeof path === 'string' ){
-            path= path.split( /\s+/ )
-        }
-        
-        var data= this.data
-        for( var i= 0; i < path.length; ++i ){
-            var key= path[ i ]
-            if( !key ) continue
-            
-            var struct= []
-            for( var j= 0; j < data.length; ++j ){
-                var sub= data[ j ]
-                if(!( key in sub )) continue
-                struct= struct.concat( sub[ key ] )
-            }
-            data= struct
-        }
-        
-        return new Tree( data )
+        return treePath( path )( this )
     }
     
-    tree.values= function(){
-        var values= []
-        
-        for( var j= 0; j < this.data.length; ++j ){
-            var sub= this.data[ j ]
-            if( typeof sub !== 'string' ) continue
-            values.push( sub )
+    tree.values= function( values ){
+        if( arguments.length ){
+            var args= [ 0, this.data.length ].concat( values )
+            args.splice.apply( this.data, args )
+            return this
         }
         
+        values= []
+        
+        this.forEach( function( val ){
+            if( val instanceof Tree ) return
+            values.push( val )
+        } )
+        
         return values
+    }
+    
+    tree.forEach= function( proc ){
+        this.content.forEach( proc )
+        return this
+    }
+    
+    tree.map= function( proc ){
+        return this.content.map( proc )
     }
     
     tree.toString= function(){
         return this.values().join( '\n' )
     }
     
+    tree.inspect= function( ){
+        return String( this.lines() )
+    }
+    
 }( Tree.prototype )
+
+var treePath= $.jin.path( new function( ){
+    
+    this[ '' ]= function( name ){
+        
+        return function( tree ){
+            var found= []
+            tree.content.forEach( function( value ){
+                if(!( value instanceof Tree )) return
+                if( value.name !== name ) return
+                
+                found.push( value )
+            })
+            return new Tree( found )
+        }
+        
+    }
+    
+    this[ '/' ]= function( name ){
+        
+        if( !name ) return function( tree ){
+            var result= []
+            tree.content.forEach( function( value ){
+                if(!( value instanceof Tree )) return
+                
+                result= result.concat( value.content )
+            })
+            return new Tree( result )
+        }
+        
+        return function( tree ){
+            var found= []
+            tree.content.forEach( function( value ){
+                if(!( value instanceof Tree )) return
+                
+                value.content.forEach( function( value ){
+                    if(!( value instanceof Tree )) return
+                    if( value.name !== name ) return
+                    
+                    found.push( value )
+                })
+            })
+            return new Tree( found )
+        }
+        
+    }
+    
+} )
