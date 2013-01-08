@@ -53,7 +53,7 @@ This code may autoinstall "connect" module if needed and then run the server.
 Tree
 ----
 
-Tree - new format for representing of tree structures. This is two-dimension format like YAML but collection-oriented like XML. This is very simple and very fast format (i.e. nodejs implementation 15x faster than "yaml-js", but 10x slover tan native json-parser). 
+Tree - new format for representing of tree structures. This is two-dimension format like YAML but collection-oriented like XML. This is very simple and very fast format (i.e. this implementation ~15x faster than "yaml-js", but ~10x slover than native json-parser). 
 
 Basic example (like INI):
 
@@ -61,7 +61,7 @@ Basic example (like INI):
 	sex =male
 	profession =developer
 
-This is 3 root struct-nodes with 1 value-node in each of them.
+This is 3 struct-nodes with 1 value-node in each of them.
 All symbols after "=" is raw value without any escaping. For multiline text use multiple values:
 
 	about
@@ -102,9 +102,9 @@ You will get this tree:
 That will be serialized to empty string (**structure-nodes are igrored!**).
 But if you use "lines" method, that returns tree-object with lines in tree-format:
 
-	[ 'programmer name =Jin' ]
+	=programmer name =Jin
 
-That will be serialied right:
+That will be serialized right:
 
 	programmer name =Jin
 
