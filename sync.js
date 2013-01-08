@@ -20,7 +20,7 @@ function( func ){
                 done= true
                 
                 if( fiber ){
-                    fiber.run( res )
+                    fiber.run( )
                     fiber= null
                 }
             } )
@@ -32,10 +32,10 @@ function( func ){
                 if( !done ){
                     fiber= fibers.current
                     fibers.yield()
-                    if( error ) error.stack+= '\n--fiber--' + stack //.replace( /^(?:[^\n]*\n){2}/, '\n' )
+                    if( error ) error.stack+= '\n--fiber--\n' + stack //.replace( /^(?:[^\n]*\n){2}/, '\n' )
                 }
                 
-                if( error ) throw err
+                if( error ) throw error
                 return result
             } )
         }

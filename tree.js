@@ -18,13 +18,13 @@ void function( tree ){
     tree.parse= function( ){
         var struct= []
         this.forEach( function( sub ){
-            if( typeof sub !== 'string' ){
+            if( sub instanceof Tree ){
                 struct.push( sub )
                 return
             }
             
             var stack= [ struct ]
-            var lines= sub.split( '\n' )
+            var lines= String( sub ).split( '\n' )
             
             for( var i= 0; i < lines.length; ++i ){
                 var line= lines[ i ]
@@ -119,9 +119,9 @@ void function( tree ){
         return this.values().join( '\n' )
     }
     
-    tree.inspect= function( ){
-        return String( this.lines() )
-    }
+    //tree.inspect= function( ){
+    //    return String( this.lines() )
+    //}
     
 }( Tree.prototype )
 
