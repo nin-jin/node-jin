@@ -99,7 +99,7 @@ You will get this tree:
 
 	programmer name =Jin
 
-That will be serialized to empty string (**structure-nodes are igrored!**).
+That will be serialized to empty string ( **structure-nodes are igrored!** ).
 But if you use "lines" method, that returns tree-object with lines in tree-format:
 
 	=programmer name =Jin
@@ -119,14 +119,14 @@ See the complex example of using tree-objects:
 	var company= $.jin.tree([ treeSource ]).parse().select(' company ')
 	var programmers= company.select(' / employee / programmer ')
 	
+	console.log( programmers )
+	//programmer name =Jin
+	//programmer name =Nin
+	
 	programmers
 	.forEach( function( programmer, index ){
 		console.log( String( programmer.select(' name / ') ) )
 	} )
 	//Jin
 	//Nin
-	
-	console.log( programmers )
-	//programmer name =Jin-0
-	//programmer name =Nin-1
 
