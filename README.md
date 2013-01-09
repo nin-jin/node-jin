@@ -1,7 +1,7 @@
 node-jin
 ========
 
-Harmoy node.js sugar full-async framework
+Harmony node.js sugar full-async framework
 
 Installation
 ------------
