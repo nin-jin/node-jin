@@ -1,8 +1,7 @@
+var proxy= require( 'jin/proxy' )
+
 module.exports=
 function( make ){
-    if( typeof Proxy === 'undefined' )
-        throw new Error( 'Harmony Proxy is disabled. Use --harmony to enable.' )
-    
     var value
     var maked= false
     
@@ -13,35 +12,77 @@ function( make ){
         return value
     }
     
-    return Proxy.createFunction
+    return proxy
     (   new function( ){
             
-            this.get=
-            function( proxy, name ){
-                var val= get()[ name ]
-                if( typeof val === 'function' ) val= val.bind( get() )
-                
-                return val
+            this.getOwnPropertyDescriptor=
+            function( target, name ){
+                return Object.getOwnPropertyDescriptor( get(), name )
             }
             
-            //this.getOwnPropertyNames=
-            //function( ){
-            //    return Object.getOwnPropertyNames( get() )
-            //}
+            this.getOwnPropertyNames=
+            function( target ){
+                return Object.getOwnPropertyNames( get() )
+            }
             
-            this.getPropertyNames=
-            function( ){
+            this.defineProperty=
+            function( target, name, descriptor ){
+                return Object.getOwnPropertyNames( get(), name, descriptor )
+            }
+            
+            this.deleteProperty=
+            function( target, name ){
+                return delete get()[ name ]
+            }
+            
+            this.has=
+            function( target, name ){
+                return name in get()
+            }
+            
+            this.hasOwn=
+            function( target, name ){
+                return get().hasOwnProperty( name )
+            }
+            
+            this.get=
+            function( target, name, receiver ){
+                var obj= get()
+                if( name === 'valueOf' ) return obj.valueOf.bind( obj )
+                return obj[ name ]
+            }
+            
+            this.set=
+            function( target, name, value, receiver ){
+                return ( ( get()[ name ]= value ), ( get()[ name ] === value ) )
+            }
+            
+            this.enumerate=
+            function( target ){
+                var names= []
+                for( var name in get() ) names.push( name )
+                return names
+            }
+            
+            this.keys=
+            function( target ){
                 return Object.keys( get() )
             }
             
-            //this.getOwnPropertyDescriptor=
-            //function( name ){
-            //    return Object.getOwnPropertyDescriptor( get(), name )
-            //}
+            this.apply=
+            function( target, self, args ){
+                return get().apply( self, args )
+            }
+            
+            this.construct=
+            function( target, args ){
+                var obj= Object.create( get().prototype )
+                var res= get().apply( obj, arguments )
+                
+                return Object( ( res == null ) ? obj : res )
+            }
             
         }
-    ,   function( ){
-            return get().apply( this, arguments )
-        }
     )
+    ( null )
 }

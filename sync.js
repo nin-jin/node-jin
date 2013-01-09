@@ -1,45 +1,52 @@
 var fibers= require( 'fibers' )
+var proxy= require( 'jin/proxy' )
+var lazy= require( 'jin/lazy' )
 
 var sync=
 function( func ){
-    if( typeof Proxy === 'undefined' )
-        throw new Error( 'Harmony Proxy is disabled. Use --harmony to enable.' )
-    
-    return Proxy.createFunction
-    (   { }
-    ,   function( ){
-            var fiber= null
-            var result= null
-            var error= null
-            var done= false
+    return proxy
+    (   new function( ){
             
-            void [].push.call( arguments, function( err, res ){
+            this.apply=
+            function( func, self, args ){
+                var fiber= null
+                var result= null
+                var error= null
+                var done= false
                 
-                result= res
-                error= err
-                done= true
+                void [].push.call( args, function( err, res ){
+                    
+                    result= res
+                    error= err
+                    done= true
+                    
+                    if( fiber ){
+                        fiber.run( )
+                        fiber= null
+                    }
+                } )
                 
-                if( fiber ){
-                    fiber.run( )
-                    fiber= null
-                }
-            } )
-            
-            var stack= (new Error).stack
-            void func.apply( this, arguments )
-            
-            return require( 'jin/lazy' )( function( ){
-                if( !done ){
-                    fiber= fibers.current
-                    fibers.yield()
-                    if( error ) error.stack+= '\n--fiber--\n' + stack //.replace( /^(?:[^\n]*\n){2}/, '\n' )
+                var stack= (new Error).stack
+                void func.apply( self, args )
+                
+                if( done ){
+                    if( error ) throw error
+                    return result
                 }
                 
-                if( error ) throw error
-                return result
-            } )
+                return lazy( function( ){
+                    if( !done ){
+                        fiber= fibers.current
+                        fibers.yield()
+                        if( error ) error.stack+= '\n--fiber--\n' + stack //.replace( /^(?:[^\n]*\n){2}/, '\n' )
+                    }
+                    
+                    if( error ) throw error
+                    return result
+                } )
+            }
         }
-    )
+    )( func )
 }
 
 module.exports= sync

@@ -1,44 +1,55 @@
 var fiberizer= require( 'jin/fiberizer' )
+var proxy= require( 'jin/proxy' )
 
 var loader=
 module.exports=
 function( prefix ){
     if( !prefix ) prefix= ''
-    
-    if( typeof Proxy === 'undefined' )
-        throw new Error( 'Harmony Proxy is disabled. Use --harmony to enable.' )
-    
-    return Proxy.createFunction
-    (   new function( ){
+    return proxy( new function( ){
             
-            this.get=
-            function( obj, name ){
-                var path= prefix + name
+        this.get=
+        function( target, name ){
+            var path= prefix + name
+            
+            try {
+                path= require.resolve( path )
+            } catch( error ){
+                if( error.code !== 'MODULE_NOT_FOUND' ) throw error
                 
                 try {
-                    path= require.resolve( path )
+                    var $= loader()
+                    $.npm.loadSync( {} ).valueOf()
+                    $.npm.commands.installSync([ path ]).valueOf()
                 } catch( error ){
-                    if( error.code !== 'MODULE_NOT_FOUND' ) throw error
-                    
-                    var $= require( 'jin' ).loader()
-                    
-                    try {
-                        $.npm.loadSync( {} ).valueOf()
-                        $.sync
-                        $.npm.commands.install.sync( $.npm.commands, [ path ] )
-                    } catch( error ){
-                        console.log( error.stack )
-                        throw new Error( 'Can not autoinstall module [' + path + ']' )
-                    }
+                    console.log( error.stack )
+                    throw new Error( 'Can not autoinstall module [' + path + ']' )
                 }
-                
-                return fiberizer( require( path ) )
             }
             
+            return fiberizer( require( path ) )
         }
-    ,   function( func ){
+        
+        this.apply=
+        function( target, self, args ){
+            var func= args[ 0 ]
+            var callback= args[ 1 ]
             var $= loader()
-            return $.fibers( func ).run( $ )
+            
+            var proc=
+            callback
+            ?   function( ){
+                    try {
+                        var result= func.apply( this, arguments )
+                    } catch( err ){
+                        var error= err
+                    }
+                    callback( error, result )
+                }
+            :   func
+            
+            var fibers= $.fibers
+            return fibers( proc ).run( $ )
         }
-    )
+        
+    } )( {} )
 }

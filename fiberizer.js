@@ -1,34 +1,28 @@
+var fibers= require( 'fibers' )
+var proxy= require( 'jin/proxy' )
+var sync= require( 'jin/sync' )
+
 var fiberize=
 module.exports=
-function ( base ){
-    if( typeof Proxy === 'undefined' )
-        throw new Error( 'Harmony Proxy is disabled. Use --harmony to enable.' )
-    
-    return Proxy.createFunction
+function( base ){
+    return proxy
     (   new function( ){
             
             this.get=
-            function( proxy, name ){
-                if( !require( 'fibers' ).current )
+            function( base, name ){
+                if( !fibers.current )
                     return base[ name ]
                 
                 var chunks= /^(.*)Sync$/.exec( name )
                 if( !chunks )
-                    return base[ name ]
+                    return fiberize( base[ name ] )
                 
                 name= chunks[ 1 ]
                 
-                return /*fiberize*/( require( 'jin/sync' )( base[ name ] ) )
+                return sync( base[ name ] )
             }
             
-            this.getPropertyNames=
-            function( ){
-                return Object.keys( base )
-            }
-            
-        }
-    ,   function( ){
-            return base.apply( null, arguments )
         }
     )
+    ( base )
 }

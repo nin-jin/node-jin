@@ -119,9 +119,9 @@ void function( tree ){
         return this.values().join( '\n' )
     }
     
-    //tree.inspect= function( ){
-    //    return String( this.lines() )
-    //}
+    tree.inspect= function( ){
+        return String( this.lines() )
+    }
     
 }( Tree.prototype )
 
