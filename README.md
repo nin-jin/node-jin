@@ -50,6 +50,47 @@ Wrap your application to fiber:
 This code may autoinstall "connect" module if needed and then run the server.
 
 
+SOD
+---
+
+SOD - Syncronization On Demand. Use fibers transparent to client code. This is full sync-like api, but with full async backend.
+
+	console.log( $.fs.readFileSync( 'data.tree' ).toString() )
+
+This is really sync code that stops the world until file will be loaded. But inside fiber, this stops only current fiber and only when result really needed! See another example:
+
+	require( 'jin' )( function( $ ){
+		
+		function get( ){
+			return $.request.getSync( "http://example.org/?" + Math.random() )
+		}
+		
+		console.time( 'serial' )
+			console.log( get().statusCode )
+			console.log( get().statusCode )
+		console.timeEnd( 'serial' )
+		
+		console.time( 'parallel' )
+			var resp1= get()
+			var resp2= get()
+			console.log( resp1.statusCode )
+			console.log( resp2.statusCode )
+		console.timeEnd( 'parallel' )
+		
+	} )
+
+This code outputs something like this:
+
+	200
+	200
+	serial: 2418ms
+	200
+	200
+	parallel: 1189ms
+
+The "request" module is not provide "getSync" method, but this is some magic from $.jin.loader that wrap all modules to $.jin.fiberizer proxy. This proxy traps all <name>Sync methods and returns method <name> wrapped to $.jin.sync. $.jin.sync converts regular async-function to sync-function returns future-proxy that stops current fiber when result of async-task will be accessed. It preserves $.fs.readFileSync sync-api but use async $.fs.readFile instead.
+
+
 Tree
 ----
 

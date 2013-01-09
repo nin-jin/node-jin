@@ -10,16 +10,22 @@ function( base ){
             
             this.get=
             function( base, name ){
+                var value= base[ name ]
+                
                 if( !fibers.current )
-                    return base[ name ]
+                    return value
                 
                 var chunks= /^(.*)Sync$/.exec( name )
-                if( !chunks )
-                    return fiberize( base[ name ] )
+                if( !chunks ){
+                    if(( base == null )||( typeof base !== 'object' ))
+                        return value
+                    
+                    return fiberize( value )
+                }
                 
-                name= chunks[ 1 ]
+                value= base[ chunks[ 1 ] ]
                 
-                return sync( base[ name ] )
+                return sync( value )
             }
             
         }
