@@ -66,7 +66,7 @@ function( make ){
             
             this.keys=
             function( target ){
-                return Object.keys( get() )
+                return Object.keys( Object( get() ) )
             }
             
             this.apply=
