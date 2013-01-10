@@ -16,7 +16,7 @@
     "email": "nin-jin@ya.ru"
   },
   "dependencies": {
-    "sync": "*",
+    "fibers": "*",
     "npm": "*"
   },
   "engine": "node >= 0.4.1",
