@@ -155,17 +155,21 @@ Tree - new format for representing of tree structures. This is two-dimension for
 
 Basic example (like INI):
 
-	name =Jin
-	sex =male
-	profession =developer
+```js
+name =Jin
+sex =male
+profession =developer
+```
 
 This is 3 struct-nodes with 1 value-node in each of them.
 All symbols after "=" is raw value without any escaping. For multiline text use multiple values:
 
-	about
-		=Hello, i am javascript developer.
-		=My e-mail is nin-jin@ya.ru.
-		=You can use = and any other symbols here.
+```js
+about
+	=Hello, i am javascript developer.
+	=My e-mail is nin-jin@ya.ru.
+	=You can use = and any other symbols here.
+```
 
 This is tree with 1 struct-node and 3 value-nodes.
 
@@ -173,21 +177,29 @@ This is tree with 1 struct-node and 3 value-nodes.
 
 Let us make more deep tree:
 
-	company
-		employee
-			programmer
-				name =Jin
+```js
+company
+	employee
+		programmer
+			name =Jin
+```
 
 You can simplify this tree to any of variants like this:
 
-	company employee programmer name =Jin
-    
-	company employee
-		programmer name =Jin
-    
-    company
-		employee programmer
-			name =Jin
+```js
+company employee programmer name =Jin
+```
+
+```js
+company employee
+	programmer name =Jin
+```
+
+```js
+company
+	employee programmer
+		name =Jin
+```
 
 And then you select programmers by this code:
 
@@ -197,16 +209,22 @@ companyTree.select(' company / employee / programmer ')
 
 You will get this tree:
 
-	programmer name =Jin
+```js
+programmer name =Jin
+```
 
 That will be serialized to empty string ( **structure-nodes are igrored!** ).
 But if you use "lines" method, that returns tree-object with lines in tree-format:
 
-	=programmer name =Jin
+```js
+=programmer name =Jin
+```
 
 That will be serialized right:
 
-	programmer name =Jin
+```js
+programmer name =Jin
+```
 
 See the complex example of using tree-objects:
 
