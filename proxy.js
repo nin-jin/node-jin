@@ -45,6 +45,7 @@ var HarmonyProxy=
                 
                 this.get=
                 function( receiver, name ){
+                    if( name === 'toString' ) return function(){ return String( target ) }
                     return handler.get ? handler.get( target, name, receiver ) : target[ name ]
                 }
                 

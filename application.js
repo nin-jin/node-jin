@@ -1,33 +1,46 @@
-var $= require( 'jin' ).loader()
-
 module.exports= function( module ){
     
-    var app= null
-    
-    function start( ){
-        app= $.child_process.fork( module )
-        app.on( 'exit', function( code ){
-            if( !code ) return
-            console.info( 'Application halted (' + code + '). Restart..' )
-            start()
-        } )
-    }
-    
-    function restart( ){
-        app.kill()
+    require( 'jin' )( function( $ ){
+        var app= null
+        var allowRestart= false
+        
+        function start( ){
+            console.info( '$.jin.application:start' )
+            app= $.child_process.fork( module )
+            
+            allowRestart= false
+            var isStopped= false
+            
+            app.on( 'exit', function( code ){
+                if( code ) console.info( '$.jin.application:halted(' + code + ')' )
+                app= null
+                if( allowRestart ) start()
+            } )
+            
+            var sleepTimer= setTimeout( function( ){
+                if( !app ) start()
+                else allowRestart= true
+            }, 1000 )
+        }
+        
+        function restart( ){
+            allowRestart= true
+            if( app ) app.kill()
+            else start()
+        }
+        
         start()
-    }
-    
-    start()
-    
-    $['fs-watch-tree'].watchTree
-    (   '.'
-    ,   {   presistent: false
-        }
-    ,   function( event ){
-            console.info( 'Some files changed. Restart application...' )
-            restart()
-        }
-    )
+        
+        $['fs-watch-tree'].watchTree
+        (   '.'
+        ,   {   presistent: false
+            }
+        ,   function( event ){
+                console.info( '$.jin.application:fs-tree-changed' )
+                restart()
+            }
+        )
+        
+    } )
     
 }

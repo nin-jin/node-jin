@@ -1,6 +1,7 @@
 var fibers= require( 'fibers' )
 var proxy= require( 'jin/proxy' )
 var sync= require( 'jin/sync' )
+var lazy= require( 'jin/lazy' )
 
 var fiberize=
 module.exports=
@@ -10,22 +11,22 @@ function( base ){
             
             this.get=
             function( base, name ){
-                var value= base[ name ]
-                
                 if( !fibers.current )
-                    return value
+                    return base[ name ]
                 
-                var chunks= /^(.*)Sync$/.exec( name )
+                var chunks= /^(.+)Sync(Now)?$/.exec( name )
                 if( !chunks ){
                     if(( base == null )||( typeof base !== 'object' ))
-                        return value
+                        return base[ name ]
                     
-                    return fiberize( value )
+                    return fiberize( base[ name ] )
                 }
                 
-                value= base[ chunks[ 1 ] ]
+                name= chunks[ 1 ]
+                var now= chunks[ 2 ]
+                var value= sync( base[ name ], now )
                 
-                return sync( value )
+                return value
             }
             
         }

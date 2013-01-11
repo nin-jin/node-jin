@@ -18,8 +18,8 @@ function( prefix ){
                 
                 try {
                     var $= loader()
-                    $.npm.loadSync( {} ).valueOf()
-                    $.npm.commands.installSync([ path ]).valueOf()
+                    $.npm.loadSyncNow( {} )
+                    $.npm.commands.installSyncNow([ path ])
                 } catch( error ){
                     console.log( error.stack )
                     throw new Error( 'Can not autoinstall module [' + path + ']' )
