@@ -94,15 +94,18 @@ The "request" module is not provide "getSync" method, but this is some magic fro
 Application support
 -------------------
 
-Name your application "app.js", but run it by "index.js" with this content:
+Use $.jin.application as supervisor for your daemon-applications.
+
+If your application is "app.js", run it by "index.js" with this content:
 	
 	require( 'jin' ).application( 'app.js' )
 	
 That will observe the application and will restart it when:
 
  * Aplication crashes
- * Some files in current folder changes
-
+ * Application stops by process.exit()
+ * Some files changes in current folder
+ 
 
 Tree
 ----
