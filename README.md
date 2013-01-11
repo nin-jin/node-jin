@@ -42,12 +42,49 @@ You can use customized loaders:
 If module is not installed, $.jin.loader tries to install that by npm. But this feature uses fibers!
 Wrap your application to fiber:
     
-    require( 'jin' )( function( $ ){
+    require( 'jin' ).application( function( $ ){
         var app= $.connect( $.connect.static( 'public' ) )
         $.http.createServer( app ).listen( 8080 )
     } )
 
 This code may autoinstall "connect" module if needed and then run the server.
+
+
+Persistent
+-------------------
+
+When your application has crashed or when its files has updated, you need to restart application. This is monkey job. To reduce it, wrap your application to $.jin.persistent:
+
+require( 'jin' ).persistent( function( $ ){
+
+    $.connect()
+    .use( function( req, res ){
+        res.end( 'hello world!' )
+    } )
+    .listen( 80 )
+    
+} )
+
+That is all :) How it works? $.jin.persistent forks main module and run callback in child process. And restart it when needed. Example of console output while i has editing this simple application:
+
+	>node --harmony .
+	$.jin.persistent: Starting application...
+	$.jin.persistent: Some files changed!
+	$.jin.persistent: Starting application...
+	
+	C:\OpenServer\domains\node.test\index.js:5
+			res.end( 'hello world!! )
+					 ^^^^^^^^^^^^^^^^
+	SyntaxError: Unexpected token ILLEGAL
+		at Module._compile (module.js:437:25)
+		at Object.Module._extensions..js (module.js:467:10)
+		at Module.load (module.js:356:32)
+		at Function.Module._load (module.js:312:12)
+		at Module.runMain (module.js:492:10)
+		at process.startup.processNextTick.process._tickCallback (node.js:244:9)
+	$.jin.persistent: Application halted (1)
+	$.jin.persistent: Some files changed!
+	$.jin.persistent: Starting application...
 
 
 SOD
@@ -59,7 +96,7 @@ SOD - Syncronization On Demand. Use fibers transparent to client code. This is f
 
 This is really sync code that stops the world until file will be loaded. But inside fiber, this stops only current fiber and only when result really needed! See another example:
 
-	require( 'jin' )( function( $ ){
+	require( 'jin' ).application( function( $ ){
 		
 		function get( ){
 			return $.request.getSync( "http://example.org/?" + Math.random() )
@@ -90,22 +127,6 @@ This code outputs something like this:
 
 The "request" module is not provide "getSync" method, but this is some magic from $.jin.loader that wrap all modules to $.jin.fiberizer proxy. This proxy traps all [name]Sync methods and returns method [name] wrapped to $.jin.sync. $.jin.sync converts regular async-function to sync-function returns future-proxy that stops current fiber when result of async-task will be accessed. It preserves $.fs.readFileSync sync-api but uses async $.fs.readFile instead.
 
-
-Application support
--------------------
-
-Use $.jin.application as supervisor for your daemon-applications.
-
-If your application is "app.js", run it by "index.js" with this content:
-	
-	require( 'jin' ).application( 'app.js' )
-	
-That will observe the application and will restart it when:
-
- * Aplication crashes
- * Application stops by process.exit()
- * Some files changes in current folder
- 
 
 Tree
 ----
