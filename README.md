@@ -145,8 +145,14 @@ serial: 2418ms
 parallel: 1189ms
 ```
 
-The "request" module is not provide "getSync" method, but this is some magic from $.jin.loader that wrap all modules to $.jin.fiberizer proxy. This proxy traps all [name]Sync methods and returns method [name] wrapped to $.jin.sync. $.jin.sync converts regular async-function to sync-function returns future-proxy that stops current fiber when result of async-task will be accessed. It preserves $.fs.readFileSync sync-api but uses async $.fs.readFile instead.
+The "request" module is not provide "getSync" method, but this is some magic from $.jin.loader that wrap all modules to $.jin.fiberizer proxy. This proxy traps all [name]Sync methods and returns method [name] wrapped to $.jin.async2sync. $.jin.async2sync converts regular async-function to sync-function returns future-proxy that stops current fiber when result of async-task will be accessed. It preserves $.fs.readFileSync sync-api but uses async $.fs.readFile instead.
 
+If you needs for stopping fiber immediately - use [name]SyncNow method instead. See some cut from $.jin.loader that initializing npm and installing some module:
+
+```js
+$.npm.loadSyncNow( {} )
+$.npm.commands.installSyncNow([ path ])
+```
 
 Tree
 ----
