@@ -1,4 +1,4 @@
-module.exports= function( body ){
+module.exports= function( body, options ){
     
     require( 'jin' ).application( process.env[ '$.jin.persistent:body' ] ? body : supervisor )
     
@@ -36,8 +36,7 @@ module.exports= function( body ){
         
         $['fs-watch-tree'].watchTree
         (   '.'
-        ,   {   presistent: false
-            }
+        ,   options || { exclude: [ /(\\|\/|^)[^a-zA-Z]/ ] }
         ,   $.jin.throttle( 200, function( event ){
                 console.info( $['cli-color'].green( '$.jin.persistent: Some files changed!' ) )
                 restart()
