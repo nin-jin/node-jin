@@ -3,31 +3,24 @@ var proxy= require( 'jin/proxy' )
 
 var loader=
 module.exports=
-function( prefix ){
-    if( !prefix ) prefix= ''
-    return proxy( new function( ){
-            
-        this.get=
-        function( target, name ){
-            var path= prefix + name
-            
-            try {
-                path= require.resolve( path )
-            } catch( error ){
-                if( error.code !== 'MODULE_NOT_FOUND' ) throw error
-                
-                try {
-                    var $= loader()
-                    $.npm.loadSyncNow( {} )
-                    $.npm.commands.installSyncNow([ path ])
-                } catch( error ){
-                    console.log( error.stack )
-                    throw new Error( 'Can not autoinstall module [' + path + ']' )
-                }
-            }
-            
-            return fiberizer( require( path ) )
-        }
+proxy( { get: function( prefix, name ){
+    var path= ( prefix || '' ) + name
+    
+    try {
+        path= require.resolve( path )
+    } catch( error ){
+        if( error.code !== 'MODULE_NOT_FOUND' ) throw error
+        if( name === 'constructor' ) return function(){ return function(){} }
         
-    } )( {} )
-}
+        if( name === 'valueOf' ) return function(){ return 'y' }
+        if( name === 'inspect' ) return function(){ return '$.jin.loader( "' + prefix + '" )' }
+        
+        console.log( '$.jin.loader: Autoinstall( ' + path + ' )')
+        
+        var $= loader()
+        $.npm.loadSyncNow( {} )
+        $.npm.commands.installSyncNow([ path ])
+    }
+    
+    return fiberizer( require( path ) )
+} } )

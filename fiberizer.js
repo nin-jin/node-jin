@@ -1,35 +1,27 @@
 var fibers= require( 'fibers' )
 var proxy= require( 'jin/proxy' )
-var sync= require( 'jin/sync' )
-var lazy= require( 'jin/lazy' )
+var async2sync= require( 'jin/async2sync' )
 
-var fiberize=
+var fiberizer=
 module.exports=
-function( base ){
-    return proxy
-    (   new function( ){
-            
-            this.get=
-            function( base, name ){
-                if( !fibers.current )
-                    return base[ name ]
-                
-                var chunks= /^(.+)Sync(Now)?$/.exec( name )
-                if( !chunks ){
-                    if(( base == null )||( typeof base !== 'object' ))
-                        return base[ name ]
-                    
-                    return fiberize( base[ name ] )
-                }
-                
-                name= chunks[ 1 ]
-                var now= chunks[ 2 ]
-                var value= sync( base[ name ], now )
-                
-                return value
-            }
-            
-        }
-    )
-    ( base )
-}
+proxy( { get: function( base, name ){
+    if( !fibers.current )
+        return base[ name ]
+    
+    if( name === 'valueOf' ) return function( ){ return base }
+    if( name === 'inspect' ) return function(){ return require( 'util' ).inspect( base ) }
+    
+    var chunks= /^(.+)Sync(Now)?$/.exec( name )
+    if( !chunks ){
+        if( typeof base[ name ] !== 'object' )
+            return base[ name ]
+        
+        return fiberizer( base[ name ] )
+    }
+    
+    name= chunks[ 1 ]
+    var now= chunks[ 2 ]
+    var value= async2sync( base[ name ], now )
+    
+    return value
+} } )

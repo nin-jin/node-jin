@@ -1,12 +1,11 @@
 var fibers= require( 'fibers' )
 var proxy= require( 'jin/proxy' )
+var lazy= require( 'jin/lazy' )
 
-var sync=
+module.exports=
 function( func, now ){
     return proxy
-    (   new function( ){
-            
-            this.apply=
+    (   {   apply:
             function( func, self, args ){
                 var fiber= null
                 var result= null
@@ -37,7 +36,7 @@ function( func, now ){
                     if( !done ){
                         fiber= fibers.current
                         fibers.yield()
-                        if( error ) error.stack+= '\n--fiber--\n' + stack
+                        if( error ) error.stack+= '\n--fiber--' + stack.replace( /^[^\n]*/, '' )
                     }
                     
                     if( error ) throw error
@@ -49,5 +48,3 @@ function( func, now ){
         }
     )( func )
 }
-
-module.exports= sync
