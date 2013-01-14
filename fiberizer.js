@@ -20,6 +20,9 @@ proxy( { get: function( base, name ){
     }
     
     name= chunks[ 1 ]
+    if( typeof base[ name ] !== 'function' )
+        return base[ name ]
+    
     var now= chunks[ 2 ]
     var value= async2sync( base[ name ], now )
     

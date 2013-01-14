@@ -36,7 +36,7 @@ module.exports= function( body, options ){
         
         $['fs-watch-tree'].watchTree
         (   '.'
-        ,   options || { exclude: [ /(\\|\/|^)[^a-zA-Z]/ ] }
+        ,   options || { exclude: [ /(\\|\/|^)[^a-zA-Z]/, 'node_modules' ] }
         ,   $.jin.throttle( 200, function( event ){
                 console.info( $['cli-color'].green( '$.jin.persistent: Some files changed!' ) )
                 restart()

@@ -24,7 +24,6 @@ function( func, now ){
                     }
                 } )
                 
-                var stack= (new Error).stack
                 void func.apply( self, args )
                 
                 if( done ){
@@ -36,7 +35,7 @@ function( func, now ){
                     if( !done ){
                         fiber= fibers.current
                         fibers.yield()
-                        if( error ) error.stack+= '\n--fiber--' + stack.replace( /^[^\n]*/, '' )
+                        if( error ) error.stack+= '\n--fiber--' + (new Error).stack.replace( /^[^\n]*/, '' )
                     }
                     
                     if( error ) throw error

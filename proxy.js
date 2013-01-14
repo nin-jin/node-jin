@@ -1,93 +1,99 @@
-if( typeof Proxy === 'undefined' )
-    throw new Error( 'Harmony Proxy is disabled. Use --harmony to enable.' )
+module.exports= function( handler ){
 
-var HarmonyProxy=
-( typeof Proxy === 'function' )
-?   Proxy
-:   function( target, handler ){
+    if( typeof Proxy === 'undefined' )
+        throw new Error( 'Harmony Proxy is disabled. Use --harmony to enable.' )
+
+    if( typeof Proxy === 'function' ) return function( target ){
+        return Proxy( target, handler )
+    }
+    
+    var oldTraps= new function( ){
+        
+        this.getOwnPropertyDescriptor=
+        function( name ){
+            return ( handler.getOwnPropertyDescriptor || Object.getOwnPropertyDescriptor )( this.valueOf(), name )
+        }
+        
+        this.getOwnPropertyNames=
+        function( ){
+            return ( handler.getOwnPropertyNames || Object.getOwnPropertyNames )( this.valueOf() )
+        }
+        
+        this.defineProperty=
+        function( name, descriptor ){
+            return ( handler.getOwnPropertyNames || Object.getOwnPropertyNames )( this.valueOf(), name, descriptor )
+        }
+        
+        this.delete=
+        function( name ){
+            return handler.deleteProperty ? handler.deleteProperty( this.valueOf(), name ) : delete this.valueOf()[ name ]
+        }
+        
+        this.fix=
+        function( ){
+            throw new Error( '"fix" trap is unsupported for this proxy' )
+        }
+        
+        this.has=
+        function( name ){
+            return handler.has ? handler.has( this.valueOf(), name ) : name in this.valueOf()
+        }
+        
+        this.hasOwn=
+        function( name ){
+            return handler.hasOwn ? handler.hasOwn( this.valueOf(), name ) : this.valueOf().hasOwnProperty( name )
+        }
+        
+        this.get=
+        function( receiver, name ){
+            if( handler.get ) return handler.get( this.valueOf(), name, receiver )
+            
+            if( name === 'valueOf' ) return this.valueOf
+            if( name === 'toString' ) return function(){ return String( this.valueOf() ) }
+            if( name === 'inspect' ) return function(){ return require( 'util' ).inspect( this.valueOf() ) }
+            if( this.valueOf() == null ) return null
+            
+            return this.valueOf()[ name ]
+        }
+        
+        this.set=
+        function( receiver, name, value ){
+            if( handler.set ) return handler.set( this.valueOf(), name, value, receiver )
+            
+            this.valueOf()[ name ]= value
+            return this.valueOf()[ name ] === value
+        }
+        
+        this.enumerate=
+        function( ){
+            if( handler.enumerate ) return handler.enumerate( this.valueOf() )
+            
+            var names= []
+            for( var name in this.valueOf() ) names.push( name )
+            return names
+        }
+        
+        this.keys=
+        function( ){
+            if( handler.keys ) return handler.keys( valueOf )
+            
+            return Object.keys( Object( this.valueOf() ) )
+        }
+        
+        this.valueOf= null
+        
+    }
+    
+    return function( target ){
         var valueOf=
         function( ){
             return handler.hasOwnProperty( 'valueOf' ) ? handler.valueOf( target ) : target
         }
-        var oldTraps= new function( ){
-            
-            this.getOwnPropertyDescriptor=
-            function( name ){
-                return ( handler.getOwnPropertyDescriptor || Object.getOwnPropertyDescriptor )( valueOf(), name )
-            }
-            
-            this.getOwnPropertyNames=
-            function( ){
-                return ( handler.getOwnPropertyNames || Object.getOwnPropertyNames )( valueOf() )
-            }
-            
-            this.defineProperty=
-            function( name, descriptor ){
-                return ( handler.getOwnPropertyNames || Object.getOwnPropertyNames )( valueOf(), name, descriptor )
-            }
-            
-            this.delete=
-            function( name ){
-                return handler.deleteProperty ? handler.deleteProperty( valueOf(), name ) : delete valueOf()[ name ]
-            }
-            
-            this.fix=
-            function( ){
-                throw new Error( '"fix" trap is unsupported for this proxy' )
-            }
-            
-            this.has=
-            function( name ){
-                return handler.has ? handler.has( valueOf(), name ) : name in valueOf()
-            }
-            
-            this.hasOwn=
-            function( name ){
-                return handler.hasOwn ? handler.hasOwn( valueOf(), name ) : valueOf().hasOwnProperty( name )
-            }
-            
-            this.get=
-            function( receiver, name ){
-                if( handler.get ) return handler.get( valueOf(), name, receiver )
-                
-                if( name === 'valueOf' ) return valueOf
-                if( name === 'toString' ) return function(){ return String( valueOf() ) }
-                if( name === 'inspect' ) return function(){ return require( 'util' ).inspect( valueOf() ) }
-                if( valueOf() == null ) return null
-                
-                return valueOf()[ name ]
-            }
-            
-            this.set=
-            function( receiver, name, value ){
-                if( handler.set ) return handler.set( valueOf(), name, value, receiver )
-                
-                valueOf()[ name ]= value
-                return valueOf()[ name ] === value
-            }
-            
-            this.enumerate=
-            function( ){
-                if( handler.enumerate ) return handler.enumerate( valueOf() )
-                
-                var names= []
-                for( var name in valueOf() ) names.push( name )
-                return names
-            }
-            
-            this.keys=
-            function( ){
-                if( handler.keys ) return handler.keys( valueOf )
-                
-                return Object.keys( Object( valueOf() ) )
-            }
-            
-            this.valueOf= valueOf
-            
-        }
         
+        var traps= Object.create( oldTraps )
+        traps.valueOf= valueOf
         return Proxy.createFunction
-        (   oldTraps
+        (   traps
         ,   function( ){
                 return handler.apply ? handler.apply( valueOf(), this, arguments ) : valueOf().apply( this, arguments )
             }
@@ -102,8 +108,4 @@ var HarmonyProxy=
         )
     }
 
-module.exports= function( handler ){
-    return function( target ){
-        return HarmonyProxy( target, handler )
-    }
 }
