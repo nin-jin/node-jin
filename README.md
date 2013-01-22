@@ -157,6 +157,8 @@ $.npm.commands.installSyncNow([ path ])
 Tree
 ----
 
+[Specification (ru)](http://hyoo.ru/?article=%D0%A4%D0%BE%D1%80%D0%BC%D0%B0%D1%82+Tree;author=Nin+Jin)
+
 Tree - new format for representing of tree structures. This is two-dimension format like YAML but collection-oriented like XML. This is very simple and very fast format (i.e. this implementation ~15x faster than "yaml-js", but ~10x slover than native json-parser). 
 
 Basic example (like INI):
